@@ -1,0 +1,32 @@
+[package]
+name = "bbrs-cli"
+description = "CLI binary for bbrs — a multi-provider AI agent with tool orchestration"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["ai", "agent", "cli", "llm", "anthropic"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "bbrs"
+path = "src/main.rs"
+
+[dependencies]
+bbrs-agent.workspace    = true
+bbrs-compact.workspace  = true
+bbrs-config.workspace   = true
+bbrs-memory.workspace   = true
+bbrs-providers.workspace = true
+bbrs-tools.workspace    = true
+bbrs-mcp.workspace      = true
+bbrs-protocol.workspace = true
+bbrs-skills.workspace   = true
+bbrs-types.workspace    = true
+
+tokio.workspace              = true
+anyhow.workspace             = true
+clap.workspace               = true
+tracing.workspace            = true
+tracing-subscriber.workspace = true
+workspace-hack.workspace = true
