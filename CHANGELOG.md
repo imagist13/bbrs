@@ -3,6 +3,13 @@
 > This changelog continues upstream history. Entries before the bbrs fork refer to
 > [iOfficeAI/aionrs](https://github.com/iOfficeAI/aionrs).
 
+## [0.2.12](https://github.com/imagist13/bbrs/compare/v0.2.11...v0.2.12) (2026-11-25)
+
+
+### Documentation
+
+* refresh fork status and BBUI integration notes ([99bf608](https://github.com/imagist13/bbrs/commit/99bf6081988a4a2bbc7a6c115e87434625b5d7ca))
+
 ## [0.2.11](https://github.com/iOfficeAI/aionrs/compare/v0.2.10...v0.2.11) (2026-08-13)
 
 
