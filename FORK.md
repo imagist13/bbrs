@@ -1,7 +1,7 @@
 # bbrs：Fork 说明与进度
 
 > 本文档记录 `bbrs` 作为 aionrs fork 的来源、改名范围、刻意保留项、当前进度和后续待办。
-> 状态截至 2026-11-03。
+> 状态截至 2026-11-25。
 
 ## 1. 来源
 
@@ -75,11 +75,16 @@
 
 ## 4. 当前仓库状态
 
-- `.git` 已由用户重新初始化：分支 `main`，**0 个提交**，无 remote，
-  上游历史不在本仓库中。
+- `.git` 已重新初始化：分支 `main`，初始提交
+  `8397926 chore: fork aionrs v0.2.11 as bbrs`（后续提交见 `git log`），
+  remote `origin` 指向 `https://github.com/imagist13/bbrs.git`；上游 aionrs
+  历史不在本仓库中。
+- 发布 tag：`v0.1.0`。这是 fork 自身的版本号，与 crate 的
+  `version = "0.2.11"`（上游基线版本）不是同一套编号，见第 7 节。
 - `Cargo.lock` 已按新包名重新生成：`aion-*` 条目 0 个，`bbrs-*` 条目 12 个。
 - 工具链：`rust-toolchain.toml` 钉 `1.96.1`，本机已安装。
-- 构建产物：`target/` 尚未生成（构建验证未完成）。
+- 构建产物：`target/debug/bbrs.exe` 已生成。
+- `README.md` 已补充 BBUI 角色说明与 fork 定位。
 
 ## 5. 验证进度
 
@@ -89,41 +94,42 @@
 - `justfile`、`release.yml`、`release-please-config.json`、`.cargo/config.toml`、
   `.config/hakari.toml` 一致性检查
 - 全仓 `aion` 残留审计（仅剩第 3 节白名单）
+- CLI 构建与运行期身份：`target/debug/bbrs.exe --version` 输出 `bbrs 0.2.11`
+- 作为依赖被宿主编译：`bb-agent-core` 的 `bb-ai-agent`、`bb-team` 测试目标
+  在 `tag = "v0.1.0"` 解析出的源码上编译通过（11 个 `bbrs-*` crate，
+  `bbrs-cli` 除外）
 
-未完成：
+未单独在本仓库执行（宿主构建只覆盖编译，不覆盖本仓库自有测试）：
 
-- `cargo check --workspace --all-targets`
-  首次依赖下载经由代理速度过慢（单个 crate 约 8 秒），中途停止，未得到结果。
-- `cargo test -p bbrs-config -p bbrs-skills -p bbrs-types`
-- `cargo run -p bbrs-cli -- --help`
+- `cargo test --workspace`
+- `cargo clippy --workspace`
+- `cargo fmt --all -- --check`
 
 ## 6. 后续待办
 
-网络恢复后依次执行：
+在本仓库依次执行：
 
 ```bash
-cargo check --workspace --all-targets
-cargo test -p bbrs-config -p bbrs-skills -p bbrs-types
-cargo run -p bbrs-cli -- --help     # 应显示 bbrs，版本 0.2.11
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets
+cargo test --workspace
 ```
 
-全部通过后提交并打 tag：
+已发布的 `v0.1.0` tag 不可移动；需要包含新提交时另打新 tag（例如 `v0.1.1`），
+再同步 `bb-agent-core/Cargo.toml` 的 tag。
 
-```bash
-git add -A
-git commit -m "chore: fork aionrs v0.2.11 as bbrs"
-git tag v0.2.11-bbrs.1
-```
+## 7. 与 bb-agent-core 的接入现状
 
-remote 由用户自建仓库后配置，未配置前不要 push。
-
-## 7. 后续接入 bb-agent-core 的注意事项（本次不做）
-
-改动面已核实：
-
-- 仅 `bb-ai-agent` 引用 aion crate，涉及约 15 个文件、38 处 `use aion_*`。
-- `bb-app/Cargo.toml` 有一个未使用的 `aion-config` 依赖。
-- 两处 aion 类型泄漏到公共 API：`AionrsResolvedConfig` 字段、
-  `sanitize_session_messages` 的签名。
-- `bb-agent-core/scripts/just/cargo.{sh,ps1}` 已有 `AIONRS` 环境变量做本地
-  patch 的能力，接入时需同步改为新版包名。
+- `bb-agent-core/Cargo.toml` 以
+  `git = "https://github.com/imagist13/bbrs.git", tag = "v0.1.0"` 钉住六个
+  crate：`bbrs-agent`、`bbrs-providers`、`bbrs-types`、`bbrs-protocol`、
+  `bbrs-config`、`bbrs-mcp`；其余 crate 传递引入，共 11 个，`bbrs-cli` 不参与。
+- **tag 与 crate 版本是两套编号**：tag `v0.1.0` 是 fork 的发布号，crate 的
+  `version = "0.2.11"` 是上游基线版本。`Cargo.lock` 里二者同时出现
+  （`version = "0.2.11"` + `source = "...?tag=v0.1.0#<commit>`）属于预期。
+  判断宿主编译用的是哪份源码，看 `Cargo.lock` 的 commit 哈希，不要看 tag 号。
+- 本地联调走 `scripts/just/cargo.{sh,ps1}` 的 `BBRS` 环境变量：设置后按路径
+  覆盖依赖，并校验 patch 确实生效；未设置时从 git tag 拉取。
+- 接入后宿主侧不再有 `use aion_*`；`bb-app` 的未使用 `aion-config` 依赖和两处
+  泄漏到公共 API 的 aion 类型（`AionrsResolvedConfig`、
+  `sanitize_session_messages`）已在接入时清理。

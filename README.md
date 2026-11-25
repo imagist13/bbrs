@@ -1,10 +1,32 @@
 # bbrs
 
-A Rust-based LLM tool-use agent for the command line. It connects to LLM APIs, autonomously invokes local tools (file I/O, shell, search, etc.), and completes tasks end-to-end.
+A Rust-based LLM tool-use agent. It runs as a standalone CLI and as the embedded engine of the Buckyball AI workbench (BBUI). It connects to LLM APIs, autonomously invokes local tools (file I/O, shell, search, etc.), and completes tasks end-to-end.
 
 > **Fork notice:** bbrs is a fork of [iOfficeAI/aionrs](https://github.com/iOfficeAI/aionrs)
 > at tag `v0.2.11` (commit `8e61a90`), maintained for the Buckyball vertical agent.
 > Licensed under Apache-2.0; upstream attribution and history are preserved.
+
+## Role in BBUI
+
+[BBUI](https://github.com/imagist13/bb-studio) is the desktop shell. It spawns
+[`bb-agent-core`](https://github.com/imagist13/bb-agent-core) (`bbcore`), which links the
+`bbrs-*` crates and exposes the engine to the UI as the `bbdev` agent.
+
+- **`bb-studio`** — Electron desktop shell: chat, EDA workbench, ACP host.
+- **`bb-agent-core`** — local runtime (`bbcore`): REST + WebSocket, MCP, skills, assistants, teams.
+- **`bbrs`** (this repo) — agent engine: loop, providers, tools, MCP client, sessions.
+- **[Buckyball](https://github.com/DangoSys/buckyball)** — chip framework and toolchain; supplies the `bbdev_*` MCP tools the agent drives.
+
+`bb-agent-core` pins this repository by git tag `v0.1.0` and depends directly on
+`bbrs-agent`, `bbrs-providers`, `bbrs-types`, `bbrs-protocol`, `bbrs-config`, and
+`bbrs-mcp`; the remaining engine crates come in transitively (11 total, `bbrs-cli`
+excluded). The crate `version` fields still read `0.2.11` from the upstream baseline —
+the git tag is what pins the source. In BBUI, the engine's persisted identifier is
+`bbrs` and its display name is `bbdev`.
+
+The host, not the engine, supplies the Buckyball-specific content: the `buckyball`
+assistant and its rules, the 17 Buckyball skills, and the `bbdev` / `waveform` MCP
+servers. For host integration, see [JSON Stream Protocol](docs/json-stream-protocol.md).
 
 ## Features
 
